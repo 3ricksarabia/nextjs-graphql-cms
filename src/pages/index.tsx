@@ -5,9 +5,9 @@ import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import Link from "next/link";
 import { GraphQLClient } from "graphql-request";
-import Grid from "./components/Grid";
-import Stack from "./components/Stack";
-import { getPages } from "./queries/pages";
+import Grid from "../components/Grid";
+import Stack from "../components/Stack";
+import { getPages } from "../queries/pages";
 
 const inter = Inter({ subsets: ["latin"] });
 

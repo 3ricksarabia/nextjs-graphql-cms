@@ -1,13 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
+import { FC } from "react";
 import Head from "next/head";
-import Image from "next/image";
 import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import Link from "next/link";
+import { GraphQLClient } from "graphql-request";
+import Grid from "./components/Grid";
+import Stack from "./components/Stack";
+import { getPages } from "./queries/pages";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function Home() {
+const Home: FC<{
+  grid: {
+    items: {
+      title: string;
+      description: string;
+    }[];
+  };
+  stack: {
+    items: {
+      title: string;
+      description: string;
+    }[];
+  };
+}> = ({ grid, stack }) => {
   return (
     <>
       <Head>
@@ -25,113 +42,34 @@ export default function Home() {
         </nav>
       </header>
       <main className={`${styles.main} ${inter.className}`}>
-        <section className={styles.grid}>
-          <div className={styles.featured}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={600}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor sit amet</h3>
-              <p>
-                Faucibus interdum posuere lorem ipsum dolor sit amet
-                consectetur. Ipsum dolor sit amet consectetur adipiscing elit ut
-                aliquam purus.
-              </p>
-            </div>
-          </div>
-          <div className={styles.first}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={230}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor sit amet</h3>
-              <p>
-                Faucibus interdum posuere lorem ipsum dolor sit amet
-                consectetur.
-              </p>
-            </div>
-          </div>
-          <div className={styles.second}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={230}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor sit amet</h3>
-              <p>
-                Ipsum dolor sit amet consectetur adipiscing elit ut aliquam
-                purus.
-              </p>
-            </div>
-          </div>
-          <div className={styles.third}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={230}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor sit amet</h3>
-              <p>
-                Faucibus interdum posuere lorem ipsum dolor sit amet
-                consectetur.
-              </p>
-            </div>
-          </div>
-        </section>
-        <section className={styles.stack}>
-          <div className={styles.card}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={372}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor</h3>
-              <p>
-                Faucibus interdum posuere lorem ipsum dolor sit amet
-                consectetur.
-              </p>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={372}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor</h3>
-              <p>
-                Faucibus interdum posuere lorem ipsum dolor sit amet
-                consectetur.
-              </p>
-            </div>
-          </div>
-          <div className={styles.card}>
-            <img
-              alt="placeholder"
-              src="https://via.placeholder.com/1024x768/eee?text=4:3"
-              width={372}
-            ></img>
-            <div className={styles.text}>
-              <h3>Lorem ipsum dolor</h3>
-              <p>
-                Ipsum dolor sit amet consectetur adipiscing elit ut aliquam
-                purus.
-              </p>
-            </div>
-          </div>
-        </section>
+        <Grid items={grid.items} />
+        <Stack items={stack.items} />
       </main>
       <footer className={`${styles.footer} ${inter.className}`}>
         © 2023 - All rights reserved.
       </footer>
     </>
   );
-}
+};
+
+export const getServerSideProps = async () => {
+  const hygraph = new GraphQLClient(
+    process.env.NEXT_PUBLIC_HYGRAPH_API_URL || "",
+    {
+      headers: {
+        authorization: process.env.NEXT_PUBLIC_HYGRAPH_API_TOKEN || "",
+      },
+    }
+  );
+
+  const data: { pages: any } = await hygraph.request(getPages());
+
+  return {
+    props: {
+      grid: data?.pages[0].components[0],
+      stack: data?.pages[0].components[1],
+    },
+  };
+};
+
+export default Home;
